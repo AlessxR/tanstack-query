@@ -1,6 +1,11 @@
-import { useQuery } from '@tanstack/react-query';
+import {
+    useQuery,
+    useSuspenseQueries,
+    useSuspenseQuery,
+} from '@tanstack/react-query';
 
 import { api } from '../api/api';
+import { Suspense } from 'react';
 
 type Post = {
     id: number;
@@ -17,21 +22,31 @@ function getAuthData() {
     });
 }
 
-export const PostsPage = () => {
-    const isAuth = false;
-
-    const { data: userData } = useQuery({
-        queryKey: ['userData'],
-        queryFn: getAuthData,
-        retry: false,
+function PostsList() {
+    const [{ data: userData }, { data: posts }] = useSuspenseQueries({
+        queries: [
+            {
+                queryKey: ['userData'],
+                queryFn: getAuthData,
+            },
+            {
+                queryKey: ['posts'],
+                queryFn: getPosts,
+            },
+        ],
     });
 
-    const { data: posts } = useQuery({
-        queryKey: ['posts'],
-        queryFn: getPosts,
-        retry: false,
-        enabled: !!userData,
-    });
+    // const { data: userData } = useSuspenseQuery({
+    //     queryKey: ['userData'],
+    //     queryFn: getAuthData,
+    //     retry: false,
+    // });
+
+    // const { data: posts } = useSuspenseQuery({
+    //     queryKey: ['posts'],
+    //     queryFn: getPosts,
+    //     retry: false,
+    // });
 
     return (
         <div className="flex flex-col gap-4">
@@ -41,6 +56,16 @@ export const PostsPage = () => {
                     {post.title}
                 </div>
             ))}
+        </div>
+    );
+}
+
+export const PostsPage = () => {
+    return (
+        <div className="flex flex-col gap-4">
+            <Suspense fallback={<h1>Loading posts...</h1>}>
+                <PostsList />
+            </Suspense>
         </div>
     );
 };
