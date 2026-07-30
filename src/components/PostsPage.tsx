@@ -21,28 +21,28 @@ function getPostById(id: number) {
     return api.get<Post>(`/posts/${id}`).then((res) => res.data);
 }
 
+function getNotifications() {
+    return api
+        .get<{ notificationCount: number }>(`/notifications`)
+        .then((res) => res.data);
+}
+
 function PostsList() {
     // он достает из контекста queryClient, который был создан в корне приложения и передан через QueryClientProvider
-    const queryClient = useQueryClient();
 
-    const {
-        data: posts,
-        isFetching,
-        isLoading,
-        isPending,
-        refetch,
-    } = useQuery({
-        queryKey: ['posts'],
-        queryFn: ({ signal }) => getPosts(signal),
+    const { data: notifications } = useQuery({
+        queryKey: ['notifications'],
+        queryFn: getNotifications,
         retry: false,
+        refetchInterval: 1000,
     });
 
-    const cancelRequest = () => {
-        // отменяет все запросы с queryKey = ['posts']
-        queryClient.cancelQueries({ queryKey: ['posts'] });
-    };
+    // const cancelRequest = () => {
+    //     // отменяет все запросы с queryKey = ['posts']
+    //     queryClient.cancelQueries({ queryKey: ['posts'] });
+    // };
 
-    console.log(posts);
+    console.log(notifications);
 
     // перезапрашивает данные в кэше, но не делает новый запрос на сервер
     // const invalidatePosts = () => {
@@ -62,7 +62,10 @@ function PostsList() {
 
     return (
         <div className="flex flex-col gap-4">
-            <button
+            <h1 style={{ color: 'red' }}>
+                notifications = {notifications?.notificationCount}
+            </h1>
+            {/* <button
                 className="bg-blue-500 text-white p-2 rounded"
                 onClick={() => refetch()}
             >
@@ -71,12 +74,12 @@ function PostsList() {
             {isFetching && <p>Loading...</p>}
             {isLoading && <p>Loading...</p>}
             {isPending && <p>Loading...</p>}
-            {posts?.map((post) => (
-                <div key={post.id}>
-                    {post.id}
-                    {post.title}
+            {notifications?.map((notification) => (
+                <div key={notification.id}>
+                    {notification.id}
+                    {notification.title}
                 </div>
-            ))}
+            ))} */}
         </div>
     );
 }
