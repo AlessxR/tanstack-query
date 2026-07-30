@@ -7,8 +7,8 @@ type Post = {
     title: string;
 };
 
-function getPosts(signal?: AbortSignal) {
-    return api.get<Post[]>('/posts', { signal }).then((res) => res.data);
+function getPosts() {
+    return api.get<Post[]>('/posts').then((res) => res.data);
 }
 
 function getAuthData() {
@@ -29,12 +29,29 @@ function getNotifications() {
 
 function PostsList() {
     // он достает из контекста queryClient, который был создан в корне приложения и передан через QueryClientProvider
+    const queryClient = useQueryClient();
 
     const { data: notifications } = useQuery({
         queryKey: ['notifications'],
         queryFn: getNotifications,
         retry: false,
         refetchInterval: 1000,
+    });
+
+    const {
+        data: posts,
+        isLoading,
+        isFetching,
+        isPending,
+    } = useQuery({
+        queryKey: ['posts'],
+        queryFn: getPosts,
+        retry: false,
+        initialData: [
+            { id: 1, title: '#############' },
+            { id: 2, title: '######' },
+            { id: 3, title: '####################' },
+        ],
     });
 
     // const cancelRequest = () => {
@@ -62,10 +79,10 @@ function PostsList() {
 
     return (
         <div className="flex flex-col gap-4">
-            <h1 style={{ color: 'red' }}>
+            {/* <h1 style={{ color: 'red' }}>
                 notifications = {notifications?.notificationCount}
             </h1>
-            {/* <button
+            <button
                 className="bg-blue-500 text-white p-2 rounded"
                 onClick={() => refetch()}
             >
@@ -73,13 +90,13 @@ function PostsList() {
             </button>
             {isFetching && <p>Loading...</p>}
             {isLoading && <p>Loading...</p>}
-            {isPending && <p>Loading...</p>}
-            {notifications?.map((notification) => (
+            {isPending && <p>Loading...</p>} */}
+            {posts?.map((notification) => (
                 <div key={notification.id}>
                     {notification.id}
                     {notification.title}
                 </div>
-            ))} */}
+            ))}
         </div>
     );
 }
