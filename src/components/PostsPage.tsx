@@ -1,12 +1,6 @@
-import {
-    useQueries,
-    useQuery,
-    useSuspenseQueries,
-    useSuspenseQuery,
-} from '@tanstack/react-query';
+import { QueryClient, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { api } from '../api/api';
-import { Suspense } from 'react';
 
 type Post = {
     id: number;
@@ -27,39 +21,66 @@ function getPostById(id: number) {
     return api.get<Post>(`/posts/${id}`).then((res) => res.data);
 }
 
-const postsIds = [1, 2, 3, 4, 5];
-
 function PostsList() {
-    const data = useQueries({
-        // подгрузка данных с айдишками от 1 до 5
-        queries: postsIds.map((id) => ({
-            queryKey: ['post', id],
-            queryFn: () => getPostById(id),
-        })),
+    // он достает из контекста queryClient, который был создан в корне приложения и передан через QueryClientProvider
+    const queryClient = useQueryClient();
+
+    const {
+        data: posts,
+        isFetching,
+        isLoading,
+        isPending,
+    } = useQuery({
+        queryKey: ['posts'],
+        queryFn: getPosts,
+        retry: false,
     });
 
-    console.log(data);
+    console.log(posts);
 
-    // const { data: userData } = useSuspenseQuery({
-    //     queryKey: ['userData'],
-    //     queryFn: getAuthData,
-    //     retry: false,
-    // });
+    // перезапрашивает данные в кэше, но не делает новый запрос на сервер
+    const invalidatePosts = () => {
+        queryClient.invalidateQueries({ queryKey: ['posts'] });
+    };
 
-    // const { data: posts } = useSuspenseQuery({
-    //     queryKey: ['posts'],
-    //     queryFn: getPosts,
-    //     retry: false,
-    // });
+    // делает новый запрос на сервер и обновляет кэш
+    const refetchPosts = () => {
+        queryClient.refetchQueries({ queryKey: ['posts'] }); // запускает запрос
+    };
+
+    // сбрасывает кэш и удаляет данные из него
+    const resetQueries = () => {
+        // Например, при logout из системы
+        queryClient.resetQueries({ queryKey: ['posts'] }); // удаляет данные из кэша
+    };
 
     return (
         <div className="flex flex-col gap-4">
-            {/* {data.posts?.map((post) => (
+            <button
+                className="bg-blue-500 text-white p-2 rounded"
+                onClick={invalidatePosts}
+            >
+                INVALIDATE
+            </button>
+            <button
+                className="bg-blue-500 text-white p-2 rounded"
+                onClick={refetchPosts}
+            >
+                refetchPosts
+            </button>
+            <button
+                className="bg-blue-500 text-white p-2 rounded"
+                onClick={resetQueries}
+            >
+                resetQueries
+            </button>
+            {isFetching && <p>Loading...</p>}
+            {posts?.map((post) => (
                 <div key={post.id}>
                     {post.id}
                     {post.title}
                 </div>
-            ))} */}
+            ))}
         </div>
     );
 }
