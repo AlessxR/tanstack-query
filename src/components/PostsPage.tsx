@@ -17,16 +17,21 @@ export const PostsPage = () => {
         isLoading,
         isPending,
         isFetching,
+        status,
+        fetchStatus,
     } = useQuery({
         queryKey: ['posts'],
         queryFn: getPosts,
         staleTime: 30000, // 30 секунд, в течение которых данные считаются актуальными и не будут повторно запрашиваться
+        gcTime: 60000, // 60 секунд, и данные будут удалены из кэша, ибо они больше не актуальны
     });
 
     console.log(posts);
 
     return (
         <div className="flex flex-col gap-4">
+            {status}
+            {fetchStatus}
             {isLoading && <div>Loading...</div>}
             {isPending && <div>Pending...</div>}
             {isFetching && <div>Fetching...</div>}
