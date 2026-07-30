@@ -7,8 +7,8 @@ type Post = {
     title: string;
 };
 
-function getPosts() {
-    return api.get<Post[]>('/posts').then((res) => res.data);
+function getPosts(signal?: AbortSignal) {
+    return api.get<Post[]>('/posts', { signal }).then((res) => res.data);
 }
 
 function getAuthData() {
@@ -30,51 +30,47 @@ function PostsList() {
         isFetching,
         isLoading,
         isPending,
+        refetch,
     } = useQuery({
         queryKey: ['posts'],
-        queryFn: getPosts,
+        queryFn: ({ signal }) => getPosts(signal),
         retry: false,
     });
+
+    const cancelRequest = () => {
+        // отменяет все запросы с queryKey = ['posts']
+        queryClient.cancelQueries({ queryKey: ['posts'] });
+    };
 
     console.log(posts);
 
     // перезапрашивает данные в кэше, но не делает новый запрос на сервер
-    const invalidatePosts = () => {
-        queryClient.invalidateQueries({ queryKey: ['posts'] });
-    };
+    // const invalidatePosts = () => {
+    //     queryClient.invalidateQueries({ queryKey: ['posts'] });
+    // };
 
-    // делает новый запрос на сервер и обновляет кэш
-    const refetchPosts = () => {
-        queryClient.refetchQueries({ queryKey: ['posts'] }); // запускает запрос
-    };
+    // // делает новый запрос на сервер и обновляет кэш
+    // const refetchPosts = () => {
+    //     queryClient.refetchQueries({ queryKey: ['posts'] }); // запускает запрос
+    // };
 
-    // сбрасывает кэш и удаляет данные из него
-    const resetQueries = () => {
-        // Например, при logout из системы
-        queryClient.resetQueries({ queryKey: ['posts'] }); // удаляет данные из кэша
-    };
+    // // сбрасывает кэш и удаляет данные из него
+    // const resetQueries = () => {
+    //     // Например, при logout из системы
+    //     queryClient.resetQueries({ queryKey: ['posts'] }); // удаляет данные из кэша
+    // };
 
     return (
         <div className="flex flex-col gap-4">
             <button
                 className="bg-blue-500 text-white p-2 rounded"
-                onClick={invalidatePosts}
+                onClick={() => refetch()}
             >
                 INVALIDATE
             </button>
-            <button
-                className="bg-blue-500 text-white p-2 rounded"
-                onClick={refetchPosts}
-            >
-                refetchPosts
-            </button>
-            <button
-                className="bg-blue-500 text-white p-2 rounded"
-                onClick={resetQueries}
-            >
-                resetQueries
-            </button>
             {isFetching && <p>Loading...</p>}
+            {isLoading && <p>Loading...</p>}
+            {isPending && <p>Loading...</p>}
             {posts?.map((post) => (
                 <div key={post.id}>
                     {post.id}
