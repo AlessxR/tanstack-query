@@ -1,4 +1,5 @@
 import {
+    useQueries,
     useQuery,
     useSuspenseQueries,
     useSuspenseQuery,
@@ -22,19 +23,22 @@ function getAuthData() {
     });
 }
 
+function getPostById(id: number) {
+    return api.get<Post>(`/posts/${id}`).then((res) => res.data);
+}
+
+const postsIds = [1, 2, 3, 4, 5];
+
 function PostsList() {
-    const [{ data: userData }, { data: posts }] = useSuspenseQueries({
-        queries: [
-            {
-                queryKey: ['userData'],
-                queryFn: getAuthData,
-            },
-            {
-                queryKey: ['posts'],
-                queryFn: getPosts,
-            },
-        ],
+    const data = useQueries({
+        // подгрузка данных с айдишками от 1 до 5
+        queries: postsIds.map((id) => ({
+            queryKey: ['post', id],
+            queryFn: () => getPostById(id),
+        })),
     });
+
+    console.log(data);
 
     // const { data: userData } = useSuspenseQuery({
     //     queryKey: ['userData'],
@@ -50,12 +54,12 @@ function PostsList() {
 
     return (
         <div className="flex flex-col gap-4">
-            {posts?.map((post) => (
+            {/* {data.posts?.map((post) => (
                 <div key={post.id}>
                     {post.id}
                     {post.title}
                 </div>
-            ))}
+            ))} */}
         </div>
     );
 }
@@ -63,9 +67,7 @@ function PostsList() {
 export const PostsPage = () => {
     return (
         <div className="flex flex-col gap-4">
-            <Suspense fallback={<h1>Loading posts...</h1>}>
-                <PostsList />
-            </Suspense>
+            <PostsList />
         </div>
     );
 };
