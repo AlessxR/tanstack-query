@@ -11,14 +11,26 @@ function getPosts() {
     return api.get<Post[]>('/posts').then((res) => res.data);
 }
 
+function getAuthData() {
+    return new Promise((resolve) => {
+        setTimeout(() => resolve({ userData: {} }), 1500);
+    });
+}
+
 export const PostsPage = () => {
     const isAuth = false;
+
+    const { data: userData } = useQuery({
+        queryKey: ['userData'],
+        queryFn: getAuthData,
+        retry: false,
+    });
 
     const { data: posts } = useQuery({
         queryKey: ['posts'],
         queryFn: getPosts,
         retry: false,
-        enabled: isAuth,
+        enabled: !!userData,
     });
 
     return (
