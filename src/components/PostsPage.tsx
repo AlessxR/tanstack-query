@@ -1,6 +1,7 @@
 import { QueryClient, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { api } from '../api/api';
+import { Link } from 'react-router';
 
 type Post = {
     id: number;
@@ -31,12 +32,12 @@ function PostsList() {
     // он достает из контекста queryClient, который был создан в корне приложения и передан через QueryClientProvider
     const queryClient = useQueryClient();
 
-    const { data: notifications } = useQuery({
-        queryKey: ['notifications'],
-        queryFn: getNotifications,
-        retry: false,
-        refetchInterval: 1000,
-    });
+    // const { data: notifications } = useQuery({
+    //     queryKey: ['notifications'],
+    //     queryFn: getNotifications,
+    //     retry: false,
+    //     refetchInterval: 1000,
+    // });
 
     const {
         data: posts,
@@ -47,7 +48,12 @@ function PostsList() {
         queryKey: ['posts'],
         queryFn: getPosts,
         retry: false,
-        initialData: [
+        // initialData: [
+        //     { id: 1, title: '#############' },
+        //     { id: 2, title: '######' },
+        //     { id: 3, title: '####################' },
+        // ],
+        placeholderData: [
             { id: 1, title: '#############' },
             { id: 2, title: '######' },
             { id: 3, title: '####################' },
@@ -59,7 +65,7 @@ function PostsList() {
     //     queryClient.cancelQueries({ queryKey: ['posts'] });
     // };
 
-    console.log(notifications);
+    // console.log(notifications);
 
     // перезапрашивает данные в кэше, но не делает новый запрос на сервер
     // const invalidatePosts = () => {
@@ -91,11 +97,11 @@ function PostsList() {
             {isFetching && <p>Loading...</p>}
             {isLoading && <p>Loading...</p>}
             {isPending && <p>Loading...</p>} */}
-            {posts?.map((notification) => (
-                <div key={notification.id}>
-                    {notification.id}
-                    {notification.title}
-                </div>
+            {posts?.map((post) => (
+                <Link key={post.id} to={`/posts/${post.id}`}>
+                    {post.id}
+                    {post.title}
+                </Link>
             ))}
         </div>
     );
