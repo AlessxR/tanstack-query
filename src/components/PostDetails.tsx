@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../api/api';
 import { useParams } from 'react-router';
 
@@ -14,11 +14,16 @@ function getPostById(id: number) {
 // id, title, description. comments, view, ...etc
 export const PostDetails = () => {
     const queryClient = useQueryClient();
-    
+
     const { id } = useParams();
     const { data: post } = useQuery({
         queryKey: ['post', id],
         queryFn: () => getPostById(Number(id)),
+        placeholderData: () => {
+            // достаем данные из кэша, если они там есть
+            const posts = queryClient.getQueryData<Post[]>(['posts']);
+            return posts?.find((post: Post) => post.id === Number(id));
+        },
     });
 
     return (
